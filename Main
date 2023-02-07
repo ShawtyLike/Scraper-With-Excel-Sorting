@@ -1,0 +1,184 @@
+
+#I wrote this code 2 years ago so it is definetly far from perfect.
+
+import json
+import time
+
+import openpyxl
+import pandas as pd
+from selenium import webdriver
+from selenium.common.exceptions import (InvalidArgumentException,
+                                        NoSuchElementException,
+                                        StaleElementReferenceException)
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.firefox.options import Options
+
+options = Options()
+options.headless = True
+clock = 1
+row = 1
+times = 1
+driver1 = webdriver.Firefox()
+url1 = 'https://sports.ladbrokes.com/horse-racing/featured'
+driver1.get(url1)
+driver1.implicitly_wait(4)
+time.sleep(5)
+dictionarylist = []
+tip = ''
+horsenames=[]
+global df
+print("Program started !")
+global driver
+def Main(url):
+    global horsename
+    global tip
+    options = Options()
+    options.headless = True
+    count = 1
+    driver = webdriver.Firefox(options=options)
+    try:
+        driver.get(url)
+    except InvalidArgumentException:
+        pass
+    time.sleep(10)
+    try:
+        show_more = driver.find_element_by_xpath('/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-event-main-component/div/racing-event/div/div/div/div/div/div[1]/div[5]/accordion/accordion-body/race-cards-controls/div/div')
+        show_more.click()
+    except NoSuchElementException:
+        pass
+    time.sleep(5)
+
+    while count <35:
+        stars = 0
+        age = 0
+        rpr = 0
+        odds = 0
+        weight = 0
+        tips = 0
+        try:
+            eventtime = driver.find_element_by_xpath('/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-event-main-component/div/racing-event/div/div/div/div/div/div[1]/div[1]/div[1]/div[1]/span[1]').text
+        except NoSuchElementException:
+            pass
+        try:
+            eventlocation = driver.find_element_by_xpath('/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-event-main-component/div/racing-event/div/div/div/div/div/div[1]/div[1]/div[1]/div[1]/span[2]').text
+        except NoSuchElementException:
+            pass
+        try:
+            checkhorse = driver.find_element_by_xpath(f'//*[@id="content"]/racing-main-component/racing-event-main-component/div/racing-event/div/div/div/div/div/div[1]/div[5]/accordion/accordion-body/div[2]/div[{count}]/racing-outcome-card/div/div/div/div[1]/div[3]/div/span[1]').text
+        except NoSuchElementException:
+            count = 35
+            break
+        try:
+            horsename = driver.find_element_by_xpath(f'//*[@id="content"]/racing-main-component/racing-event-main-component/div/racing-event/div/div/div/div/div/div[1]/div[5]/accordion/accordion-body/div[2]/div[{count}]/racing-outcome-card/div/div/div/div[1]/div[3]/div/span[1]').text
+        except NoSuchElementException:
+            pass
+        try:
+            runnernumber = driver.find_element_by_xpath(f'/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-event-main-component/div/racing-event/div/div/div/div/div/div[1]/div[5]/accordion/accordion-body/div[2]/div[{count}]/racing-outcome-card/div/div/div/div[1]/div[1]/strong').text
+        except NoSuchElementException:
+            pass
+        try:
+            age = driver.find_element_by_xpath(f'/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-event-main-component/div/racing-event/div/div/div/div/div/div[1]/div[5]/accordion/accordion-body/div[2]/div[{count}]/racing-outcome-card/div/div/lazy-component/runner-spotlight/div/div[1]/div[1]/span[2]').text
+        except NoSuchElementException:
+            pass
+        try:
+            weight = driver.find_element_by_xpath(f'/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-event-main-component/div/racing-event/div/div/div/div/div/div[1]/div[5]/accordion/accordion-body/div[2]/div[{count}]/racing-outcome-card/div/div/lazy-component/runner-spotlight/div/div[1]/div[2]/span[2]').text
+        except NoSuchElementException:
+            pass
+        try:
+            rpr = driver.find_element_by_xpath(f'/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-event-main-component/div/racing-event/div/div/div/div/div/div[1]/div[5]/accordion/accordion-body/div[2]/div[{count}]/racing-outcome-card/div/div/lazy-component/runner-spotlight/div/div[1]/div[3]/span[2]').text
+        except NoSuchElementException:
+            rpr = 'data missing'
+        try:
+            odds = driver.find_element_by_xpath(f'/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-event-main-component/div/racing-event/div/div/div/div/div/div[1]/div[5]/accordion/accordion-body/div[2]/div[{count}]/racing-outcome-card/div/div/div/div[2]/price-odds-button/button/span[2]').text
+        except NoSuchElementException:
+            pass
+        for i in range(0,18):
+            try:
+                tip = driver.find_element_by_xpath(f'/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-event-main-component/div/racing-event/div/div/div/div/div/div[2]/racing-post-widget/accordion/accordion-body/lazy-component/racing-post-verdict/section[3]/div[{i}]/span[2]').text
+                if horsename.lower() in tip.lower():
+                    tips = tips + 1
+            except NoSuchElementException:
+                print("Tip missing")
+                tip = '$$$'
+            #     replace in with ==
+
+
+        try:
+            for element in driver.find_elements_by_xpath(f'//*[@id="content"]/racing-main-component/racing-event-main-component/div/racing-event/div/div/div/div/div/div[1]/div[5]/accordion/accordion-body/div[2]/div[{count}]'):
+                for star in element.find_elements_by_class_name('star-icon.active'):
+                    stars = stars + 1
+        except NoSuchElementException:
+            pass
+        print(f"Location: {eventlocation}\nTime: {eventtime}\nHorsename: {horsename}\nRunnerNumber: {runnernumber}\nStars: {stars}\nAge: {age}\nWeight: {weight}\nRpr: {rpr}\nOdds: {odds}\nTips: {tips}\n----------------------------------------------------------------\n")
+        dictionary = {
+                "Time": eventtime,
+                "Location": eventlocation,
+                "Horsename": horsename,
+                "RunnerNumber": runnernumber,
+                "Stars": stars,
+                "Age": age,
+                "Weight": weight,
+                "Rpr": rpr,
+                "Odds": odds,
+                "Tips": tips
+        }
+        dictionarylist.append(dictionary)
+        count = count + 1
+    db = pd.DataFrame(dictionarylist)
+    print(db)
+    db.to_excel('db.xlsx')
+    driver.close()
+time.sleep(4)
+try:
+    cookies = driver1.find_element_by_xpath('/html/body/div/div/div/vn-cookie-consent/div/a')
+    cookies.click()
+except NoSuchElementException:
+    pass
+
+time.sleep(5)
+onetrust = driver1.find_element_by_xpath('//*[@id="onetrust-accept-btn-handler"]')
+driver1.execute_script("arguments[0].scrollIntoView();",onetrust)
+onetrust.click()
+time.sleep(1)
+
+try:
+    france = driver1.find_element_by_xpath('/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-tabs-main-component/div/horseracing-tabs/div/div/div[1]/div/lazy-component/racing-featured/racing-events[2]/accordion[1]/header/div[1]')
+    france.click()
+except NoSuchElementException:
+    pass
+try:
+    sa = driver1.find_element_by_xpath('/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-tabs-main-component/div/horseracing-tabs/div/div/div[1]/div/lazy-component/racing-featured/racing-events[2]/accordion[2]/header/div[1]')
+    sa.click()
+except NoSuchElementException:
+    pass
+try:
+    usa = driver1.find_element_by_xpath('/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-tabs-main-component/div/horseracing-tabs/div/div/div[1]/div/lazy-component/racing-featured/racing-events[2]/accordion[3]/header/div[1]')
+    usa.click()
+except NoSuchElementException:
+    pass
+try:
+    aus = driver1.find_element_by_xpath('/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-tabs-main-component/div/horseracing-tabs/div/div/div[1]/div/lazy-component/racing-featured/racing-events[2]/accordion[4]/header/div[1]')
+    aus.click()
+except NoSuchElementException:
+    pass
+try:
+    intern = driver1.find_element_by_xpath('/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-tabs-main-component/div/horseracing-tabs/div/div/div[1]/div/lazy-component/racing-featured/racing-events[2]/accordion[5]/header/div[1]')
+    intern.click()
+except NoSuchElementException:
+    pass
+try:
+    vr = driver1.find_element_by_xpath('/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/root-app/bma-main/div/div/div/racing-main-component/racing-tabs-main-component/div/horseracing-tabs/div/div/div[1]/div/lazy-component/racing-featured/racing-events[3]/accordion/header/div[1]')
+    vr.click()
+except NoSuchElementException:
+    pass
+tab = driver1.find_elements_by_class_name('tab')
+time.sleep(4)
+
+timenumber = 0
+for race in tab:
+    newtab = driver1.find_elements_by_class_name('tab')
+    racetime = newtab[timenumber].get_attribute('href')
+    Main(racetime)
+    timenumber = timenumber + 1
+print("done")
+driver1.quit()
